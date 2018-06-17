@@ -13,7 +13,6 @@
 #include <BulletCollision/CollisionDispatch/btCollisionObject.h>
 #include <BulletCollision/CollisionDispatch/btCollisionWorld.h>
 #include <BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h>
-#include <BulletCollision/CollisionDispatch/btCollisionWorld.h>
 #include <BulletCollision/BroadphaseCollision/btDbvtBroadphase.h>
 
 #include <LinearMath/btQuickprof.h>
@@ -309,6 +308,7 @@ namespace MWPhysics
             float swimlevel = waterlevel + halfExtents.z() - (physicActor->getRenderingHalfExtents().z() * 2 * fSwimHeightScale);
 
             ActorTracer tracer;
+
             osg::Vec3f inertia = physicActor->getInertialForce();
             osg::Vec3f velocity;
 
@@ -321,10 +321,11 @@ namespace MWPhysics
             {
                 velocity = (osg::Quat(refpos.rot[2], osg::Vec3f(0, 0, -1))) * movement;
 
-                if (velocity.z() > 0.f && physicActor->getOnGround() && !physicActor->getOnSlope())
+                if ((velocity.z() > 0.f && physicActor->getOnGround() && !physicActor->getOnSlope())
+                 || (velocity.z() > 0.f && velocity.z() + inertia.z() <= -velocity.z() && physicActor->getOnSlope()))
                     inertia = velocity;
-                else if(!physicActor->getOnGround() || physicActor->getOnSlope())
-                    velocity = velocity + physicActor->getInertialForce();
+                else if (!physicActor->getOnGround() || physicActor->getOnSlope())
+                    velocity = velocity + inertia;
             }
 
             // dead actors underwater will float to the surface, if the CharacterController tells us to do so
@@ -357,10 +358,9 @@ namespace MWPhysics
                 osg::Vec3f nextpos = newPosition + velocity * remainingTime;
 
                 // If not able to fly, don't allow to swim up into the air
-                if(newPosition.z() < swimlevel &&
-                   !isFlying &&  // can't fly
+                if(!isFlying &&                   // can't fly
                    nextpos.z() > swimlevel &&     // but about to go above water
-                   newPosition.z() <= swimlevel)
+                   newPosition.z() < swimlevel)
                 {
                     const osg::Vec3f down(0,0,-1);
                     velocity = slide(velocity, down);
@@ -706,7 +706,7 @@ namespace MWPhysics
             if (physFramerate > 0)
             {
                 mPhysicsDt = 1.f / physFramerate;
-                std::cerr << "Warning: physics framerate was overriden (a new value is " << physFramerate << ")."  << std::endl;
+                std::cerr << "Warning: physics framerate was overridden (a new value is " << physFramerate << ")."  << std::endl;
             }
         }
     }
@@ -848,6 +848,16 @@ namespace MWPhysics
                                                                      const osg::Quat &orient,
                                                                      float queryDistance, std::vector<MWWorld::Ptr> targets)
     {
+        // First of all, try to hit where you aim to
+        int hitmask = CollisionType_World | CollisionType_Door | CollisionType_HeightMap | CollisionType_Actor;
+        RayResult result = castRay(origin, origin + (orient * osg::Vec3f(0.0f, queryDistance, 0.0f)), actor, targets, CollisionType_Actor, hitmask);
+
+        if (result.mHit)
+        {
+            return std::make_pair(result.mHitObject, result.mHitPos);
+        }
+
+        // Use cone shape as fallback
         const MWWorld::Store<ESM::GameSetting> &store = MWBase::Environment::get().getWorld()->getStore().get<ESM::GameSetting>();
 
         btConeShape shape (osg::DegreesToRadians(store.find("fCombatAngleXY")->getFloat()/2.0f), queryDistance);

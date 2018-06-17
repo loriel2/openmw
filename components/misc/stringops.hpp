@@ -2,8 +2,11 @@
 #define MISC_STRINGOPS_H
 
 #include <cctype>
+#include <cstring>
 #include <string>
 #include <algorithm>
+
+#include "utf8stream.hpp"
 
 namespace Misc
 {
@@ -53,6 +56,70 @@ public:
         case 'Z':return 'z';
         default:return c;
         };
+    }
+
+    static Utf8Stream::UnicodeChar toLowerUtf8(Utf8Stream::UnicodeChar ch)
+    {
+        // Russian alphabet
+        if (ch >= 0x0410 && ch < 0x0430)
+            return ch += 0x20;
+
+        // Cyrillic IO character
+        if (ch == 0x0401)
+            return ch += 0x50;
+
+        // Latin alphabet
+        if (ch >= 0x41 && ch < 0x60)
+            return ch += 0x20;
+
+        // Deutch characters
+        if (ch == 0xc4 || ch == 0xd6 || ch == 0xdc)
+            return ch += 0x20;
+        if (ch == 0x1e9e)
+            return 0xdf;
+
+        // TODO: probably we will need to support characters from other languages
+
+        return ch;
+    }
+
+    static std::string lowerCaseUtf8(const std::string str)
+    {
+        if (str.empty())
+            return str;
+
+        // Decode string as utf8 characters, convert to lower case and pack them to string
+        std::string out;
+        Utf8Stream stream (str.c_str());
+        while (!stream.eof ())
+        {
+            Utf8Stream::UnicodeChar character = toLowerUtf8(stream.peek());
+
+            if (character <= 0x7f)
+                out.append(1, static_cast<char>(character));
+            else if (character <= 0x7ff)
+            {
+                out.append(1, static_cast<char>(0xc0 | ((character >> 6) & 0x1f)));
+                out.append(1, static_cast<char>(0x80 | (character & 0x3f)));
+            }
+            else if (character <= 0xffff)
+            {
+                out.append(1, static_cast<char>(0xe0 | ((character >> 12) & 0x0f)));
+                out.append(1, static_cast<char>(0x80 | ((character >> 6) & 0x3f)));
+                out.append(1, static_cast<char>(0x80 | (character & 0x3f)));
+            }
+            else
+            {
+                out.append(1, static_cast<char>(0xf0 | ((character >> 18) & 0x07)));
+                out.append(1, static_cast<char>(0x80 | ((character >> 12) & 0x3f)));
+                out.append(1, static_cast<char>(0x80 | ((character >> 6) & 0x3f)));
+                out.append(1, static_cast<char>(0x80 | (character & 0x3f)));
+            }
+
+            stream.consume();
+        }
+
+        return out;
     }
 
     static bool ciLess(const std::string &x, const std::string &y) {
@@ -137,6 +204,35 @@ public:
         }
 
         return notFound;
+    }
+
+    /** @brief Replaces all occurrences of a string in another string.
+     *
+     * @param str The string to operate on.
+     * @param what The string to replace.
+     * @param with The replacement string.
+     * @param whatLen The length of the string to replace.
+     * @param withLen The length of the replacement string.
+     *
+     * @return A reference to the string passed in @p str.
+     */
+    static std::string &replaceAll(std::string &str, const char *what, const char *with,
+                                   std::size_t whatLen=std::string::npos, std::size_t withLen=std::string::npos)
+    {
+        if (whatLen == std::string::npos)
+            whatLen = strlen(what);
+
+        if (withLen == std::string::npos)
+            withLen = strlen(with);
+
+        std::size_t found;
+        std::size_t offset = 0;
+        while((found = str.find(what, offset, whatLen)) != std::string::npos)
+        {
+              str.replace(found, whatLen, with, withLen);
+              offset = found + withLen;
+        }
+        return str;
     }
 };
 

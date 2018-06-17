@@ -208,7 +208,7 @@ namespace MWGui
         if ((mFilter & Filter_OnlyEnchanted) && !(item.mFlags & ItemStack::Flag_Enchanted))
             return false;
         if ((mFilter & Filter_OnlyChargedSoulstones) && (base.getTypeName() != typeid(ESM::Miscellaneous).name()
-                                                     || base.getCellRef().getSoul() == ""))
+                                                     || base.getCellRef().getSoul() == "" || !MWBase::Environment::get().getWorld()->getStore().get<ESM::Creature>().search(base.getCellRef().getSoul())))
             return false;
         if ((mFilter & Filter_OnlyRepairTools) && (base.getTypeName() != typeid(ESM::Repair).name()))
             return false;
@@ -311,4 +311,18 @@ namespace MWGui
         std::sort(mItems.begin(), mItems.end(), cmp);
     }
 
+    void SortFilterItemModel::onClose()
+    {
+        mSourceModel->onClose();
+    }
+
+    bool SortFilterItemModel::onDropItem(const MWWorld::Ptr &item, int count)
+    {
+        return mSourceModel->onDropItem(item, count);
+    }
+
+    bool SortFilterItemModel::onTakeItem(const MWWorld::Ptr &item, int count)
+    {
+        return mSourceModel->onTakeItem(item, count);
+    }
 }

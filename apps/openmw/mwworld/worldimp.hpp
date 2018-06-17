@@ -74,17 +74,11 @@ namespace MWWorld
             Resource::ResourceSystem* mResourceSystem;
 
             Fallback::Map mFallback;
-            MWRender::RenderingManager* mRendering;
 
-            MWWorld::WeatherManager* mWeatherManager;
-
-            MWWorld::Scene *mWorldScene;
-            MWWorld::Player *mPlayer;
             std::vector<ESM::ESMReader> mEsm;
             MWWorld::ESMStore mStore;
             LocalScripts mLocalScripts;
             MWWorld::Globals mGlobalVariables;
-            MWPhysics::PhysicsSystem *mPhysics;
             bool mSky;
 
             ESM::Variant* mGameHour;
@@ -98,6 +92,11 @@ namespace MWWorld
 
             std::string mCurrentWorldSpace;
 
+            std::unique_ptr<MWWorld::Player> mPlayer;
+            std::unique_ptr<MWPhysics::PhysicsSystem> mPhysics;
+            std::unique_ptr<MWRender::RenderingManager> mRendering;
+            std::unique_ptr<MWWorld::Scene> mWorldScene;
+            std::unique_ptr<MWWorld::WeatherManager> mWeatherManager;
             std::shared_ptr<ProjectileManager> mProjectileManager;
 
             bool mGodMode;
@@ -130,7 +129,7 @@ namespace MWWorld
             Ptr copyObjectToCell(const ConstPtr &ptr, CellStore* cell, ESM::Position pos, int count, bool adjustPos);
 
             void updateSoundListener();
-            void updatePlayer(bool paused);
+            void updatePlayer();
 
             void preloadSpells();
 
@@ -215,8 +214,11 @@ namespace MWWorld
 
             void setWaterHeight(const float height) override;
 
+            void rotateWorldObject (const MWWorld::Ptr& ptr, osg::Quat rotate) override;
+
             bool toggleWater() override;
             bool toggleWorld() override;
+            bool toggleBorders() override;
 
             void adjustSky() override;
 
@@ -560,6 +562,7 @@ namespace MWWorld
 
             /// \todo this does not belong here
             void screenshot (osg::Image* image, int w, int h) override;
+            bool screenshot360 (osg::Image* image, std::string settingStr) override;
 
             /// Find center of exterior cell above land surface
             /// \return false if exterior with given name not exists, true otherwise
@@ -605,12 +608,13 @@ namespace MWWorld
             void launchProjectile (MWWorld::Ptr actor, MWWorld::ConstPtr projectile,
                                            const osg::Vec3f& worldPos, const osg::Quat& orient, MWWorld::Ptr bow, float speed, float attackStrength) override;
 
+            void applyLoopingParticles(const MWWorld::Ptr& ptr);
 
             const std::vector<std::string>& getContentFiles() const override;
-
             void breakInvisibility (const MWWorld::Ptr& actor) override;
-            // Are we in an exterior or pseudo-exterior cell and it's night?
-            bool isDark() const override;
+
+            // Allow NPCs to use torches?
+            bool useTorches() const override;
 
             bool findInteriorPositionInWorldSpace(const MWWorld::CellStore* cell, osg::Vec3f& result) override;
 

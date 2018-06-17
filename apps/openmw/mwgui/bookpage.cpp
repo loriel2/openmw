@@ -16,6 +16,7 @@ class BookPageImpl;
 
 static bool ucsSpace (int codePoint);
 static bool ucsLineBreak (int codePoint);
+static bool ucsCarriageReturn (int codePoint);
 static bool ucsBreakingSpace (int codePoint);
 
 struct BookTypesetter::Style { virtual ~Style () {} };
@@ -280,7 +281,7 @@ struct TypesetBookImpl::Typesetter : BookTypesetter
         style.mActiveColour = fontColour;
         style.mNormalColour = fontColour;
         style.mInteractiveId = 0;
-                
+
         return &style;
     }
 
@@ -342,7 +343,7 @@ struct TypesetBookImpl::Typesetter : BookTypesetter
 
         writeImpl (static_cast <StyleImpl*> (style), begin_, end_);
     }
-    
+
     void lineBreak (float margin)
     {
         assert (margin == 0); //TODO: figure out proper behavior here...
@@ -352,7 +353,7 @@ struct TypesetBookImpl::Typesetter : BookTypesetter
         mRun = NULL;
         mLine = NULL;
     }
-    
+
     void sectionBreak (int margin)
     {
         add_partial_text();
@@ -891,7 +892,7 @@ protected:
 public:
 
     typedef TypesetBookImpl::StyleImpl Style;
-    typedef std::map <TextFormat::Id, TextFormat*> ActiveTextFormats;
+    typedef std::map <TextFormat::Id, std::unique_ptr<TextFormat>> ActiveTextFormats;
 
     int mViewTop;
     int mViewBottom;
@@ -1047,7 +1048,7 @@ public:
             {
                 if (mNode != NULL)
                     i->second->destroyDrawItem (mNode);
-                delete i->second;
+                i->second.reset();
             }
 
             mActiveTextFormats.clear ();
@@ -1114,11 +1115,11 @@ public:
 
             if (j == this_->mActiveTextFormats.end ())
             {
-                TextFormat * textFormat = new TextFormat (Font, this_);
+                std::unique_ptr<TextFormat> textFormat(new TextFormat (Font, this_));
 
                 textFormat->mTexture = Font->getTextureFont ();
 
-                j = this_->mActiveTextFormats.insert (std::make_pair (Font, textFormat)).first;
+                j = this_->mActiveTextFormats.insert (std::make_pair (Font, std::move(textFormat))).first;
             }
 
             j->second->mCountVertex += run.mPrintableChars * 6;
@@ -1187,6 +1188,9 @@ public:
             while (!stream.eof ())
             {
                 Utf8Stream::UnicodeChar code_point = stream.consume ();
+
+                if (ucsCarriageReturn (code_point))
+                    continue;
 
                 if (!ucsSpace (code_point))
                     glyphStream.emitGlyph (code_point);
@@ -1329,6 +1333,11 @@ void BookPage::registerMyGUIComponents ()
 static bool ucsLineBreak (int codePoint)
 {
     return codePoint == '\n';
+}
+
+static bool ucsCarriageReturn (int codePoint)
+{
+    return codePoint == '\r';
 }
 
 static bool ucsSpace (int codePoint)

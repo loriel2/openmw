@@ -21,7 +21,7 @@ extern "C"
 
 // From version 54.56 binkaudio encoding format changed from S16 to FLTP. See:
 // https://gitorious.org/ffmpeg/ffmpeg/commit/7bfd1766d1c18f07b0a2dd042418a874d49ea60d
-// http://ffmpeg.zeranoe.com/forum/viewtopic.php?f=15&t=872
+// https://ffmpeg.zeranoe.com/forum/viewtopic.php?f=15&t=872
 #include <libswresample/swresample.h>
 }
 
@@ -35,7 +35,7 @@ extern "C"
 
 namespace MWSound
 {
-    class FFmpeg_Decoder : public Sound_Decoder
+    class FFmpeg_Decoder final : public Sound_Decoder
     {
         AVFormatContext *mFormatCtx;
         AVStream **mStream;
@@ -66,17 +66,15 @@ namespace MWSound
         bool getAVAudioData();
         size_t readAVAudioData(void *data, size_t length);
 
-        virtual void open(const std::string &fname);
-        virtual void close();
+        void open(const std::string &fname) override;
+        void close() override;
 
-        virtual std::string getName();
-        virtual void getInfo(int *samplerate, ChannelConfig *chans, SampleType *type);
+        std::string getName() override;
+        void getInfo(int *samplerate, ChannelConfig *chans, SampleType *type) override;
 
-        virtual size_t read(char *buffer, size_t bytes);
-        virtual void readAll(std::vector<char> &output);
-        virtual size_t getSampleOffset();
-
-        void fail(const std::string &msg);
+        size_t read(char *buffer, size_t bytes) override;
+        void readAll(std::vector<char> &output) override;
+        size_t getSampleOffset() override;
 
         FFmpeg_Decoder& operator=(const FFmpeg_Decoder &rhs);
         FFmpeg_Decoder(const FFmpeg_Decoder &rhs);

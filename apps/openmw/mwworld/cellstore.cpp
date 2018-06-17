@@ -445,10 +445,6 @@ namespace MWWorld
             loadRefs ();
 
             mState = State_Loaded;
-
-            // TODO: the pathgrid graph only needs to be loaded for active cells, so move this somewhere else.
-            // In a simple test, loading the graph for all cells in MW + expansions took 200 ms
-            mPathgridGraph.load(this);
         }
     }
 
@@ -681,7 +677,6 @@ namespace MWWorld
         if (mCell->mData.mFlags & ESM::Cell::Interior && mCell->mData.mFlags & ESM::Cell::HasWater)
             mWaterLevel = state.mWaterLevel;
 
-        mWaterLevel = state.mWaterLevel;
         mLastRespawn = MWWorld::TimeStamp(state.mLastRespawn);
     }
 
@@ -692,7 +687,6 @@ namespace MWWorld
         if (mCell->mData.mFlags & ESM::Cell::Interior && mCell->mData.mFlags & ESM::Cell::HasWater)
             state.mWaterLevel = mWaterLevel;
 
-        state.mWaterLevel = mWaterLevel;
         state.mHasFogOfWar = (mFogState.get() ? 1 : 0);
         state.mLastRespawn = mLastRespawn.toEsm();
     }
@@ -935,16 +929,6 @@ namespace MWWorld
     bool operator!= (const CellStore& left, const CellStore& right)
     {
         return !(left==right);
-    }
-
-    bool CellStore::isPointConnected(const int start, const int end) const
-    {
-        return mPathgridGraph.isPointConnected(start, end);
-    }
-
-    std::list<ESM::Pathgrid::Point> CellStore::aStarSearch(const int start, const int end) const
-    {
-        return mPathgridGraph.aStarSearch(start, end);
     }
 
     void CellStore::setFog(ESM::FogState *fog)

@@ -202,11 +202,6 @@ namespace MWScript
                     if (!ptr.isInCell())
                         return;
 
-                    if (ptr == MWMechanics::getPlayer())
-                    {
-                        MWBase::Environment::get().getWorld()->getPlayer().setTeleported(true);
-                    }
-
                     std::string axis = runtime.getStringLiteral (runtime[0].mInteger);
                     runtime.pop();
                     Interpreter::Type_Float pos = runtime[0].mFloat;
@@ -215,6 +210,8 @@ namespace MWScript
                     float ax = ptr.getRefData().getPosition().pos[0];
                     float ay = ptr.getRefData().getPosition().pos[1];
                     float az = ptr.getRefData().getPosition().pos[2];
+
+                    // Note: SetPos does not skip weather transitions in vanilla engine, so we do not call setTeleported(true) here.
 
                     MWWorld::Ptr updated = ptr;
                     if(axis == "x")
@@ -227,6 +224,17 @@ namespace MWScript
                     }
                     else if(axis == "z")
                     {
+                        // We should not place actors under ground
+                        if (ptr.getClass().isActor())
+                        {
+                            float terrainHeight = -std::numeric_limits<float>::max();
+                            if (ptr.getCell()->isExterior())
+                                terrainHeight = MWBase::Environment::get().getWorld()->getTerrainHeightAt(osg::Vec3f(ax, ay, az));
+
+                            if (pos < terrainHeight)
+                                pos = terrainHeight;
+                        }
+
                         updated = MWBase::Environment::get().getWorld()->moveObject(ptr,ax,ay,pos);
                     }
                     else
@@ -522,7 +530,8 @@ namespace MWScript
                         // create item
                         MWWorld::ManualRef ref(MWBase::Environment::get().getWorld()->getStore(), itemID, 1);
 
-                        MWBase::Environment::get().getWorld()->safePlaceObject(ref.getPtr(), actor, actor.getCell(), direction, distance);
+                        MWWorld::Ptr ptr = MWBase::Environment::get().getWorld()->safePlaceObject(ref.getPtr(), actor, actor.getCell(), direction, distance);
+                        MWBase::Environment::get().getWorld()->scaleObject(ptr, actor.getCellRef().getScale());
                     }
                 }
         };
@@ -570,26 +579,25 @@ namespace MWScript
                     Interpreter::Type_Float rotation = osg::DegreesToRadians(runtime[0].mFloat*MWBase::Environment::get().getFrameDuration());
                     runtime.pop();
 
-                    const float *objRot = ptr.getRefData().getPosition().rot;
+                    if (!ptr.getRefData().getBaseNode())
+                        return;
 
-                    float ax = objRot[0];
-                    float ay = objRot[1];
-                    float az = objRot[2];
+                    // We can rotate actors only around Z axis
+                    if (ptr.getClass().isActor() && (axis == "x" || axis == "y"))
+                        return;
 
+                    osg::Quat rot;
                     if (axis == "x")
-                    {
-                        MWBase::Environment::get().getWorld()->rotateObject(ptr,ax+rotation,ay,az);
-                    }
+                        rot = osg::Quat(rotation, -osg::X_AXIS);
                     else if (axis == "y")
-                    {
-                        MWBase::Environment::get().getWorld()->rotateObject(ptr,ax,ay+rotation,az);
-                    }
+                        rot = osg::Quat(rotation, -osg::Y_AXIS);
                     else if (axis == "z")
-                    {
-                        MWBase::Environment::get().getWorld()->rotateObject(ptr,ax,ay,az+rotation);
-                    }
+                        rot = osg::Quat(rotation, -osg::Z_AXIS);
                     else
                         throw std::runtime_error ("invalid rotation axis: " + axis);
+
+                    osg::Quat attitude = ptr.getRefData().getBaseNode()->getAttitude();
+                    MWBase::Environment::get().getWorld()->rotateWorldObject(ptr, attitude * rot);
                 }
         };
 

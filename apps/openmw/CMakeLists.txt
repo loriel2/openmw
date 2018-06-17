@@ -89,7 +89,7 @@ add_openmw_dir (mwmechanics
     )
 
 add_openmw_dir (mwstate
-    statemanagerimp charactermanager character
+    statemanagerimp charactermanager character quicksavemanager
     )
 
 add_openmw_dir (mwbase
@@ -159,9 +159,8 @@ if (ANDROID)
         dl
         z
         ${OPENSCENEGRAPH_LIBRARIES}
-        ${OSG_PLUGINS}
+        freetype
         jpeg
-        gif
     	png
     )
 endif (ANDROID)
@@ -190,6 +189,8 @@ if(APPLE)
     configure_file("${OpenMW_BINARY_DIR}/settings-default.cfg" ${BUNDLE_RESOURCES_DIR} COPYONLY)
     configure_file("${OpenMW_BINARY_DIR}/openmw.cfg" ${BUNDLE_RESOURCES_DIR} COPYONLY)
     configure_file("${OpenMW_BINARY_DIR}/gamecontrollerdb.txt" ${BUNDLE_RESOURCES_DIR} COPYONLY)
+    configure_file("${OpenMW_BINARY_DIR}/gamecontrollerdb_204.txt" ${BUNDLE_RESOURCES_DIR} COPYONLY)
+    configure_file("${OpenMW_BINARY_DIR}/gamecontrollerdb_205.txt" ${BUNDLE_RESOURCES_DIR} COPYONLY)
 
     add_custom_command(TARGET openmw
         POST_BUILD
@@ -221,4 +222,3 @@ endif (MSVC)
 if (WIN32)
     INSTALL(TARGETS openmw RUNTIME DESTINATION ".")
 endif (WIN32)
-

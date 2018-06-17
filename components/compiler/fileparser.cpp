@@ -63,6 +63,7 @@ namespace Compiler
         if (mState==BeginState && keyword==Scanner::K_begin)
         {
             mState = NameState;
+            scanner.enableTolerantNames(); /// \todo disable
             return true;
         }
 
@@ -117,6 +118,11 @@ namespace Compiler
                 // we are done here -> ignore the rest of the script
                 return false;
             }
+        }
+        else if (code==Scanner::S_comma && (mState==NameState || mState==EndNameState))
+        {
+            // ignoring comma (for now)
+            return true;
         }
 
         return Parser::parseSpecial (code, loc, scanner);

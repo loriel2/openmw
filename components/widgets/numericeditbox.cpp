@@ -38,11 +38,11 @@ namespace Gui
                 setCaption(MyGUI::utility::toString(mValue));
             }
         }
-        catch (std::invalid_argument)
+        catch (const std::invalid_argument&)
         {
             setCaption(MyGUI::utility::toString(mValue));
         }
-        catch (std::out_of_range)
+        catch (const std::out_of_range&)
         {
             setCaption(MyGUI::utility::toString(mValue));
         }
@@ -87,7 +87,7 @@ namespace Gui
             setValue(std::max(mValue-1, mMinValue));
             eventValueChanged(mValue);
         }
-        else
+        else if (character == 0 || (character >= '0' && character <= '9'))
             Base::onKeyButtonPressed(key, character);
     }
 

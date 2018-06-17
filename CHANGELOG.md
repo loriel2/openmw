@@ -1,3 +1,281 @@
+0.45.0
+------
+
+    Bug #1990: Sunrise/sunset not set correct
+    Bug #2222: Fatigue's effect on selling price is backwards
+    Bug #2326: After a bound item expires the last equipped item of that type is not automatically re-equipped
+    Bug #2835: Player able to slowly move when overencumbered
+    Bug #2862: [macOS] Can't quit launcher using Command-Q or OpenMW->Quit
+    Bug #2971: Compiler did not reject lines with naked expressions beginning with x.y
+    Bug #3374: Touch spells not hitting kwama foragers
+    Bug #3591: Angled hit distance too low
+    Bug #3629: DB assassin attack never triggers creature spawning
+    Bug #3876: Landscape texture painting is misaligned
+    Bug #3897: Have Goodbye give all choices the effects of Goodbye
+    Bug #3911: [macOS] Typing in the "Content List name" dialog box produces double characters
+    Bug #3993: Terrain texture blending map is not upscaled
+    Bug #3997: Almalexia doesn't pace
+    Bug #4036: Weird behaviour of AI packages if package target has non-unique ID
+    Bug #4047: OpenMW not reporting its version number in MacOS; OpenMW-CS not doing it fully
+    Bug #4215: OpenMW shows book text after last <BR> tag
+    Bug #4221: Characters get stuck in V-shaped terrain
+    Bug #4251: Stationary NPCs do not return to their position after combat
+    Bug #4293: Faction members are not aware of faction ownerships in barter
+    Bug #4327: Missing animations during spell/weapon stance switching
+    Bug #4368: Settings window ok button doesn't have key focus by default
+    Bug #4393: NPCs walk back to where they were after using ResetActors
+    Bug #4419: MRK NiStringExtraData is handled incorrectly
+    Bug #4426: RotateWorld behavior is incorrect
+    Bug #4429: [Windows] Error on build INSTALL.vcxproj project (debug) with cmake 3.7.2
+    Bug #4432: Guards behaviour is incorrect if they do not have AI packages
+    Bug #4433: Guard behaviour is incorrect with Alarm = 0
+    Bug #4451: Script fails to compile when using "Begin, [ScriptName]" syntax
+    Bug #4453: Quick keys behaviour is invalid for equipment
+    Bug #4454: AI opens doors too slow
+    Bug #4457: Item without CanCarry flag prevents shield autoequipping in dark areas
+    Feature #4256: Implement ToggleBorders (TB) console command
+    Feature #3276: Editor: Search- Show number of (remaining) search results and indicate a search without any results
+    Feature #4222: 360° screenshots
+    Feature #4324: Add CFBundleIdentifier in Info.plist to allow for macOS function key shortcuts
+    Feature #4345: Add equivalents for the command line commands to Launcher
+    Feature #4444: Per-group KF-animation files support
+
+0.44.0
+------
+
+    Bug #1428: Daedra summoning scripts aren't executed when the item is taken through the inventory
+    Bug #1987: Some glyphs are not supported
+    Bug #2254: Magic related visual effects are not rendered when loading a saved game
+    Bug #2485: Journal alphabetical index doesn't match "Morrowind content language" setting
+    Bug #2703: OnPCHitMe is not handled correctly
+    Bug #2829: Incorrect order for content list consisting of a game file and an esp without dependencies
+    Bug #2841: "Total eclipse" happens if weather settings are not defined.
+    Bug #2897: Editor: Rename "Original creature" field
+    Bug #3278: Editor: Unchecking "Auto Calc" flag changes certain values
+    Bug #3343: Editor: ID sorting is case-sensitive in certain tables
+    Bug #3557: Resource priority confusion when using the local data path as installation root
+    Bug #3587: Pathgrid and Flying Creatures wrong behaviour – abotWhereAreAllBirdsGoing
+    Bug #3603: SetPos should not skip weather transitions
+    Bug #3618: Myar Aranath total conversion can't be started due to capital-case extension of the master file
+    Bug #3638: Fast forwarding can move NPC inside objects
+    Bug #3664: Combat music does not start in dialogue
+    Bug #3696: Newlines are accompanied by empty rectangle glyph in dialogs
+    Bug #3708: Controllers broken on macOS
+    Bug #3726: Items with suppressed activation can be picked up via the inventory menu
+    Bug #3783: [Mod] Abot's Silt Striders 1.16 - silt strider "falls" to ground and glides on floor during travel
+    Bug #3863: Can be forced to not resist arrest if you cast Calm Humanoid on aggroed death warrant guards
+    Bug #3884: Incorrect enemy behavior when exhausted
+    Bug #3926: Installation Wizard places Morrowind.esm after Tribunal/Bloodmoon if it has a later file creation date
+    Bug #4061: Scripts error on special token included in name
+    Bug #4111: Crash when mouse over soulgem with a now-missing soul
+    Bug #4122: Swim animation should not be interrupted during underwater attack
+    Bug #4134: Battle music behaves different than vanilla
+    Bug #4135: Reflecting an absorb spell different from vanilla
+    Bug #4136: Enchanted weapons without "ignore normal weapons" flag don't bypass creature "ignore normal weapons" effect
+    Bug #4143: Antialiasing produces graphical artifacts when used with shader lighting
+    Bug #4159: NPCs' base skeleton files should not be optimized
+    Bug #4177: Jumping/landing animation interference/flickering
+    Bug #4179: NPCs do not face target
+    Bug #4180: Weapon switch sound playing even though no weapon is switched
+    Bug #4184: Guards can initiate dialogue even though you are far above them
+    Bug #4190: Enchanted clothes changes visibility with Chameleon on equip/unequip
+    Bug #4191: "screenshot saved" message also appears in the screenshot image
+    Bug #4192: Archers in OpenMW have shorter attack range than archers in Morrowind
+    Bug #4210: Some dialogue topics are not highlighted on first encounter
+    Bug #4211: FPS drops after minimizing the game during rainy weather
+    Bug #4216: Thrown weapon projectile doesn't rotate
+    Bug #4223: Displayed spell casting chance must be 0 if player doesn't have enough magicka to cast it
+    Bug #4225: Double "Activate" key presses with Mouse and Gamepad.
+    Bug #4226: The current player's class should be default value in the class select menu
+    Bug #4229: Tribunal/Bloodmoon summoned creatures fight other summons
+    Bug #4233: W and A keys override S and D Keys
+    Bug #4235: Wireframe mode affects local map
+    Bug #4239: Quick load from container screen causes crash
+    Bug #4242: Crime greetings display in Journal
+    Bug #4245: Merchant NPCs sell ingredients growing on potted plants they own
+    Bug #4246: Take armor condition into account when calcuting armor rating
+    Bug #4250: Jumping is not as fluid as it was pre-0.43.0
+    Bug #4252: "Error in frame: FFmpeg exception: Failed to allocate input stream" message spam if OpenMW encounter non-music file in the Music folder
+    Bug #4261: Magic effects from eaten ingredients always have 1 sec duration
+    Bug #4263: Arrow position is incorrect in 3rd person view during attack for beast races
+    Bug #4264: Player in god mode can be affected by some negative spell effects
+    Bug #4269: Crash when hovering the faction section and the 'sAnd' GMST is missing (as in MW 1.0)
+    Bug #4272: Root note transformations are discarded again
+    Bug #4279: Sometimes cells are not marked as explored on the map
+    Bug #4298: Problem with MessageBox and chargen menu interaction order
+    Bug #4301: Optimizer breaks LOD nodes
+    Bug #4308: PlaceAtMe doesn't inherit scale of calling object
+    Bug #4309: Only harmful effects with resistance effect set are resistable
+    Bug #4313: Non-humanoid creatures are capable of opening doors
+    Bug #4314: Rainy weather slows down the game when changing from indoors/outdoors
+    Bug #4319: Collisions for certain meshes are incorrectly ignored
+    Bug #4320: Using mouse 1 to move forward causes selection dialogues to jump selections forward.
+    Bug #4322: NPC disposition: negative faction reaction modifier doesn't take PC rank into account
+    Bug #4328: Ownership by dead actors is not cleared from picked items
+    Bug #4334: Torch and shield usage inconsistent with original game
+    Bug #4336: Wizard: Incorrect Morrowind assets path autodetection
+    Bug #4343: Error message for coc and starting cell shouldn't imply that it only works for interior cells
+    Bug #4346: Count formatting does not work well with very high numbers
+    Bug #4351: Using AddSoulgem fills all soul gems of the specified type
+    Bug #4391: No visual indication is provided when an unavailable spell fails to be chosen via a quick key
+    Bug #4392: Inventory filter breaks after loading a game
+    Bug #4405: No default terrain in empty cells when distant terrain is enabled
+    Bug #4410: [Mod] Arktwend: OpenMW does not use default marker definitions
+    Bug #4412: openmw-iniimporter ignores data paths from config
+    Bug #4413: Moving with 0 strength uses all of your fatigue
+    Bug #4420: Camera flickering when I open up and close menus while sneaking
+    Bug #4435: Item health is considered a signed integer
+    Bug #4441: Adding items to currently disabled weapon-wielding creatures crashes the game
+    Feature #1786: Round up encumbrance value in the encumbrance bar
+    Feature #2694: Editor: rename "model" column to make its purpose clear
+    Feature #3870: Editor: Terrain Texture Brush Button
+    Feature #3872: Editor: Edit functions in terrain texture editing mode
+    Feature #4054: Launcher: Create menu for settings.cfg options
+    Feature #4064: Option for fast travel services to charge for the first companion
+    Feature #4142: Implement fWereWolfHealth GMST
+    Feature #4174: Multiple quicksaves
+    Feature #4407: Support NiLookAtController
+    Feature #4423: Rebalance soul gem values
+    Task #4015: Use AppVeyor build artifact features to make continuous builds available
+    Editor: New (and more complete) icon set
+
+0.43.0
+------
+
+    Bug #815: Different settings cause inconsistent underwater visibility
+    Bug #1452: autosave is not executed when waiting
+    Bug #1555: Closing containers with spacebar doesn't work after touching an item
+    Bug #1692: Can't close container when item is "held"
+    Bug #2405: Maximum distance for guards attacking hostile creatures is incorrect
+    Bug #2445: Spellcasting can be interrupted
+    Bug #2489: Keeping map open not persisted between saves
+    Bug #2594: 1st person view uses wrong body texture with Better bodies
+    Bug #2628: enablestatreviewmenu command doen't read race, class and sign values from current game
+    Bug #2639: Attacking flag isn't reset upon reloading
+    Bug #2698: Snow and rain VFX move with the player
+    Bug #2704: Some creature swim animations not being used
+    Bug #2789: Potential risk of misunderstanding using the colored "owned" crosshair feature
+    Bug #3045: Settings containing '#' cannot be loaded
+    Bug #3097: Drop() doesn't work when an item is held (with the mouse)
+    Bug #3110: GetDetected doesn't work without a reference
+    Bug #3126: Framerate nosedives when adjusting dialogue window size
+    Bug #3243: Ampersand in configuration files isn't escaped automatically
+    Bug #3365: Wrong water reflection along banks
+    Bug #3441: Golden saint always dispelling soul trap / spell priority issue
+    Bug #3528: Disposing of corpses breaks quests
+    Bug #3531: No FPS limit when playing bink videos even though "framerate limit" is set in settings.cfg
+    Bug #3647: Multi-effect spells play audio louder than in Vanilla
+    Bug #3656: NPCs forget where their place in the world is
+    Bug #3665: Music transitions are too abrupt
+    Bug #3679: Spell cast effect should disappear after using rest command
+    Bug #3684: Merchants do not restock empty soul gems if they acquire filled ones.
+    Bug #3694: Wrong magicka bonus applied on character creation
+    Bug #3706: Guards don't try to arrest the player if attacked
+    Bug #3709: Editor: Camera is not positioned correctly on mode switches related to orbital mode
+    Bug #3720: Death counter not cleaned of non-existing IDs when loading a game
+    Bug #3744: "Greater/lesser or equal" operators are not parsed when their signs are swapped
+    Bug #3749: Yagrum Bagarn moves to different position on encountering
+    Bug #3766: DisableLevitation does not remove visuals of preexisting effect
+    Bug #3787: Script commands in result box for voiced dialogue are ignored
+    Bug #3793: OpenMW tries to animate animated references even when they are disabled
+    Bug #3794: Default sound buffer size is too small for mods
+    Bug #3796: Mod 'Undress for me' doesn't work: NPCs re-equip everything
+    Bug #3798: tgm command behaviour differs from vanilla
+    Bug #3804: [Mod] Animated Morrowind: some animations do not loop correctly
+    Bug #3805: Slight enchant miscalculation
+    Bug #3826: Rendering problems with an image in a letter
+    Bug #3833: [Mod] Windows Glow: windows textures are much darker than in original game
+    Bug #3835: Bodyparts with multiple NiTriShapes are not handled correctly
+    Bug #3839: InventoryStore::purgeEffect() removes only first effect with argument ID
+    Bug #3843: Wrong jumping fatigue loss calculations
+    Bug #3850: Boethiah's voice is distorted underwater
+    Bug #3851: NPCs and player say things while underwater
+    Bug #3864: Crash when exiting to Khartag point from Ilunibi
+    Bug #3878: Swapping soul gems while enchanting allows constant effect enchantments using any soul gem
+    Bug #3879: Dialogue option: Go to jail, persists beyond quickload
+    Bug #3891: Journal displays empty entries
+    Bug #3892: Empty space before dialogue entry display
+    Bug #3898: (mod) PositionCell in dialogue results closes dialogue window
+    Bug #3906: "Could not find Data Files location" dialog can appear multiple times
+    Bug #3908: [Wizard] User gets stuck if they cancel out of installing from a CD
+    Bug #3909: Morrowind Content Language dropdown is the only element on the right half of the Settings window
+    Bug #3910: Launcher window can be resized so that it cuts off the scroll
+    Bug #3915: NC text key on nifs doesn't work
+    Bug #3919: Closing inventory while cursor hovers over spell (or other magic menu item) produces left click sound
+    Bug #3922: Combat AI should avoid enemy hits when casts Self-ranged spells
+    Bug #3934: [macOS] Copy/Paste from system clipboard uses Control key instead of Command key
+    Bug #3935: Incorrect attack strength for AI actors
+    Bug #3937: Combat AI: enchanted weapons have too high rating
+    Bug #3942: UI sounds are distorted underwater
+    Bug #3943: CPU/GPU usage should stop when the game is minimised
+    Bug #3944: Attempting to sell stolen items back to their owner does not remove them from your inventory
+    Bug #3955: Player's avatar rendering issues
+    Bug #3956: EditEffectDialog: Cancel button does not update a Range button and an Area slider properly
+    Bug #3957: Weird bodypart rendering if a node has reserved name
+    Bug #3960: Clothes with high cost (> 32768) are not handled properly
+    Bug #3963: When on edge of being burdened the condition doesn't lower as you run.
+    Bug #3971: Editor: Incorrect colour field in cell table
+    Bug #3974: Journal page turning doesn't produce sounds
+    Bug #3978: Instant opening and closing happens when using a Controller with Menus/Containers
+    Bug #3981: Lagging when spells are cast, especially noticeable on new landmasses such as Tamriel Rebuilt
+    Bug #3982: Down sounds instead of Up ones are played when trading
+    Bug #3987: NPCs attack after some taunting with no "Goodbye"
+    Bug #3991: Journal can still be opened at main menu
+    Bug #3995: Dispel cancels every temporary magic effect
+    Bug #4002: Build broken on OpenBSD with clang
+    Bug #4003: Reduce Render Area of Inventory Doll to Fit Within Border
+    Bug #4004: Manis Virmaulese attacks without saying anything
+    Bug #4010: AiWander: "return to the spawn position" feature does not work properly
+    Bug #4016: Closing menus with spacebar will still send certain assigned actions through afterwards
+    Bug #4017: GetPCRunning and GetPCSneaking should check that the PC is actually moving
+    Bug #4024: Poor music track distribution
+    Bug #4025: Custom spell with copy-pasted name always sorts to top of spell list
+    Bug #4027: Editor: OpenMW-CS misreports its own name as "OpenCS", under Mac OS
+    Bug #4033: Archers don't attack if the arrows have run out and there is no other weapon
+    Bug #4037: Editor: New greetings do not work in-game.
+    Bug #4049: Reloading a saved game while falling prevents damage
+    Bug #4056: Draw animation should not be played when player equips a new weapon
+    Bug #4074: Editor: Merging of LAND/LTEX records
+    Bug #4076: Disposition bar is not updated when "goodbye" selected in dialogue
+    Bug #4079: Alchemy skill increases do not take effect until next batch
+    Bug #4093: GetResistFire, getResistFrost and getResistShock doesn't work as in vanilla
+    Bug #4094: Level-up messages for levels past 20 are hardcoded not to be used
+    Bug #4095: Error in framelistener when take all items from a dead corpse
+    Bug #4096: Messagebox with the "%0.f" format should use 0 digit precision
+    Bug #4104: Cycling through weapons does not skip broken ones
+    Bug #4105: birthsign generation menu does not show full details
+    Bug #4107: Editor: Left pane in Preferences window is too narrow
+    Bug #4112: Inventory sort order is inconsistent
+    Bug #4113: 'Resolution not supported in fullscreen' message is inconvenient
+    Bug #4131: Pickpocketing behaviour is different from vanilla
+    Bug #4155: NPCs don't equip a second ring in some cases
+    Bug #4156: Snow doesn't create water ripples
+    Bug #4165: NPCs autoequip new clothing with the same price
+    Feature #452: Rain-induced water ripples
+    Feature #824: Fading for doors and teleport commands
+    Feature #933: Editor: LTEX record table
+    Feature #936: Editor: LAND record table
+    Feature #1374: AI: Resurface to breathe
+    Feature #2320: ess-Importer: convert projectiles
+    Feature #2509: Editor: highlighting occurrences of a word in a script
+    Feature #2748: Editor: Should use one resource manager per document
+    Feature #2834: Have openMW's UI remember what menu items were 'pinned' across boots.
+    Feature #2923: Option to show the damage of the arrows through tooltip.
+    Feature #3099: Disabling inventory while dragging an item forces you to drop it
+    Feature #3274: Editor: Script Editor - Shortcuts and context menu options for commenting code out and uncommenting code respectively
+    Feature #3275: Editor: User Settings- Add an option to reset settings to their default status (per category / all)
+    Feature #3400: Add keyboard shortcuts for menus
+    Feature #3492: Show success rate while enchanting
+    Feature #3530: Editor: Reload data files
+    Feature #3682: Editor: Default key binding reset
+    Feature #3921: Combat AI: aggro priorities
+    Feature #3941: Allow starting at an unnamed exterior cell with --start
+    Feature #3952: Add Visual Studio 2017 support
+    Feature #3953: Combat AI: use "WhenUsed" enchantments
+    Feature #4082: Leave the stack of ingredients or potions grabbed after using an ingredient/potion
+    Task #2258: Windows installer: launch OpenMW tickbox
+    Task #4152: The Windows CI script is moving files around that CMake should be dealing with
+
 0.42.0
 ------
 

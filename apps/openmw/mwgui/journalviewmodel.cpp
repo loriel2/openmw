@@ -6,6 +6,7 @@
 #include <MyGUI_LanguageManager.h>
 
 #include <components/translation/translation.hpp>
+#include <components/misc/stringops.hpp>
 
 #include "../mwbase/world.hpp"
 #include "../mwbase/journal.hpp"
@@ -305,18 +306,20 @@ struct JournalViewModelImpl : JournalViewModel
         visitor (toUtf8Span (topic.getName()));
     }
 
-    void visitTopicNamesStartingWith (char character, std::function < void (const std::string&) > visitor) const
+    void visitTopicNamesStartingWith (Utf8Stream::UnicodeChar character, std::function < void (const std::string&) > visitor) const
     {
         MWBase::Journal * journal = MWBase::Environment::get().getJournal();
 
         for (MWBase::Journal::TTopicIter i = journal->topicBegin (); i != journal->topicEnd (); ++i)
         {
-            if (i->first [0] != Misc::StringUtils::toLower(character))
+            Utf8Stream stream (i->first.c_str());
+            Utf8Stream::UnicodeChar first = Misc::StringUtils::toLowerUtf8(stream.peek());
+
+            if (first != Misc::StringUtils::toLowerUtf8(character))
                 continue;
 
             visitor (i->second.getName());
         }
-
     }
 
     struct TopicEntryImpl : BaseEntry <MWDialogue::Topic::TEntryIter, TopicEntry>

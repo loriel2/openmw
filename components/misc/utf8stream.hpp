@@ -1,6 +1,7 @@
 #ifndef MISC_UTF8ITER_HPP
 #define MISC_UTF8ITER_HPP
 
+#include <cstring>
 #include <tuple>
 
 class Utf8Stream
@@ -15,6 +16,11 @@ public:
 
     Utf8Stream (Point begin, Point end) :
         cur (begin), nxt (begin), end (end), val(Utf8Stream::sBadChar())
+    {
+    }
+
+    Utf8Stream (const char * str) :
+        cur ((unsigned char*) str), nxt ((unsigned char*) str), end ((unsigned char*) str + strlen(str)), val(Utf8Stream::sBadChar())
     {
     }
 

@@ -31,6 +31,8 @@
 #include <components/sceneutil/skeleton.hpp>
 #include <components/sceneutil/positionattitudetransform.hpp>
 
+#include <components/settings/settings.hpp>
+
 #include <components/fallback/fallback.hpp>
 
 #include "../mwbase/environment.hpp"
@@ -466,6 +468,8 @@ namespace MWRender
             mAnimationTimePtr[i].reset(new AnimationTime);
 
         mLightListCallback = new SceneUtil::LightListCallback;
+
+        mUseAdditionalSources = Settings::Manager::getBool ("use additional anim sources", "Game");
     }
 
     Animation::~Animation()
@@ -486,10 +490,10 @@ namespace MWRender
         return mPtr;
     }
 
-    void Animation::setActive(bool active)
+    void Animation::setActive(int active)
     {
         if (mSkeleton)
-            mSkeleton->setActive(active);
+            mSkeleton->setActive(static_cast<SceneUtil::Skeleton::ActiveType>(active));
     }
 
     void Animation::updatePtr(const MWWorld::Ptr &ptr)
@@ -536,7 +540,36 @@ namespace MWRender
         return mKeyframes->mTextKeys;
     }
 
-    void Animation::addAnimSource(const std::string &model)
+    void Animation::loadAllAnimationsInFolder(const std::string &model, const std::string &baseModel)
+    {
+        const std::map<std::string, VFS::File*>& index = mResourceSystem->getVFS()->getIndex();
+
+        std::string animationPath = model;
+        if (animationPath.find("meshes") == 0)
+        {
+            animationPath.replace(0, 6, "animations");
+        }
+        animationPath.replace(animationPath.size()-3, 3, "/");
+
+        mResourceSystem->getVFS()->normalizeFilename(animationPath);
+
+        std::map<std::string, VFS::File*>::const_iterator found = index.lower_bound(animationPath);
+        while (found != index.end())
+        {
+            const std::string& name = found->first;
+            if (name.size() >= animationPath.size() && name.substr(0, animationPath.size()) == animationPath)
+            {
+                size_t pos = name.find_last_of('.');
+                if (pos != std::string::npos && name.compare(pos, name.size()-pos, ".kf") == 0)
+                    addSingleAnimSource(name, baseModel);
+            }
+            else
+                break;
+            ++found;
+        }
+    }
+
+    void Animation::addAnimSource(const std::string &model, const std::string& baseModel)
     {
         std::string kfname = model;
         Misc::StringUtils::lowerCaseInPlace(kfname);
@@ -546,6 +579,14 @@ namespace MWRender
         else
             return;
 
+        addSingleAnimSource(kfname, baseModel);
+
+        if (mUseAdditionalSources)
+            loadAllAnimationsInFolder(kfname, baseModel);
+    }
+
+    void Animation::addSingleAnimSource(const std::string &kfname, const std::string& baseModel)
+    {
         if(!mResourceSystem->getVFS()->exists(kfname))
             return;
 
@@ -565,7 +606,7 @@ namespace MWRender
             NodeMap::const_iterator found = nodeMap.find(bonename);
             if (found == nodeMap.end())
             {
-                std::cerr << "Warning: addAnimSource: can't find bone '" + bonename << "' in " << model << " (referenced by " << kfname << ")" << std::endl;
+                std::cerr << "Warning: addAnimSource: can't find bone '" + bonename << "' in " << baseModel << " (referenced by " << kfname << ")" << std::endl;
                 continue;
             }
 
@@ -625,7 +666,7 @@ namespace MWRender
 
     float Animation::getStartTime(const std::string &groupname) const
     {
-        for(AnimSourceList::const_iterator iter(mAnimSources.begin()); iter != mAnimSources.end(); ++iter)
+        for(AnimSourceList::const_reverse_iterator iter(mAnimSources.rbegin()); iter != mAnimSources.rend(); ++iter)
         {
             const NifOsg::TextKeyMap &keys = (*iter)->getTextKeys();
 
@@ -638,7 +679,7 @@ namespace MWRender
 
     float Animation::getTextKeyTime(const std::string &textKey) const
     {
-        for(AnimSourceList::const_iterator iter(mAnimSources.begin()); iter != mAnimSources.end(); ++iter)
+        for(AnimSourceList::const_reverse_iterator iter(mAnimSources.rbegin()); iter != mAnimSources.rend(); ++iter)
         {
             const NifOsg::TextKeyMap &keys = (*iter)->getTextKeys();
 
@@ -1668,7 +1709,7 @@ namespace MWRender
         {
             setObjectRoot(model, false, false, false);
             if (animated)
-                addAnimSource(model);
+                addAnimSource(model, model);
 
             if (!ptr.getClass().getEnchantment(ptr).empty())
                 addGlow(mObjectRoot, getEnchantmentColor(ptr));

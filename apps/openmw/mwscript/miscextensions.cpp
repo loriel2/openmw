@@ -254,6 +254,20 @@ namespace MWScript
                 }
         };
 
+        class OpToggleBorders : public Interpreter::Opcode0
+        {
+            public:
+
+                virtual void execute (Interpreter::Runtime& runtime)
+                {
+                    bool enabled =
+                        MWBase::Environment::get().getWorld()->toggleBorders();
+
+                    runtime.getContext().report (enabled ?
+                        "Border Rendering -> On" : "Border Rendering -> Off");
+                }
+        };
+
         class OpTogglePathgrid : public Interpreter::Opcode0
         {
         public:
@@ -454,7 +468,13 @@ namespace MWScript
                     store.get<ESM::Creature>().find(creature); // This line throws an exception if it can't find the creature
 
                     MWWorld::Ptr item = *ptr.getClass().getContainerStore(ptr).add(gem, 1, ptr);
+
+                    // Set the soul on just one of the gems, not the whole stack
+                    item.getContainerStore()->unstack(item, ptr);
                     item.getCellRef().setSoul(creature);
+
+                    // Restack the gem with other gems with the same soul
+                    item.getContainerStore()->restack(item);
                 }
         };
 
@@ -1374,6 +1394,7 @@ namespace MWScript
             interpreter.installSegment5 (Compiler::Misc::opcodeRemoveFromLevItem, new OpRemoveFromLevItem);
             interpreter.installSegment3 (Compiler::Misc::opcodeShowSceneGraph, new OpShowSceneGraph<ImplicitRef>);
             interpreter.installSegment3 (Compiler::Misc::opcodeShowSceneGraphExplicit, new OpShowSceneGraph<ExplicitRef>);
+            interpreter.installSegment5 (Compiler::Misc::opcodeToggleBorders, new OpToggleBorders);
         }
     }
 }

@@ -25,6 +25,9 @@ namespace Terrain
             matrix.preMultTranslate(osg::Vec3f(0.5f, 0.5f, 0.f));
             matrix.preMultScale(osg::Vec3f(scale, scale, 1.f));
             matrix.preMultTranslate(osg::Vec3f(-0.5f, -0.5f, 0.f));
+            // We need to nudge the blendmap to look like vanilla.
+            // This causes visible seams unless the blendmap's resolution is doubled, but Vanilla also doubles the blendmap, apparently.
+            matrix.preMultTranslate(osg::Vec3f(1.0f/blendmapScale/4.0f, 1.0f/blendmapScale/4.0f, 0.f));
 
             texMat = new osg::TexMat(matrix);
 
@@ -116,7 +119,10 @@ namespace Terrain
                 osg::ref_ptr<osg::Shader> vertexShader = shaderManager->getShader("terrain_vertex.glsl", defineMap, osg::Shader::VERTEX);
                 osg::ref_ptr<osg::Shader> fragmentShader = shaderManager->getShader("terrain_fragment.glsl", defineMap, osg::Shader::FRAGMENT);
                 if (!vertexShader || !fragmentShader)
-                    throw std::runtime_error("Unable to create shader");
+                {
+                    // Try again without shader. Error already logged by above
+                    return createPasses(false, forcePerPixelLighting, clampLighting, shaderManager, layers, blendmaps, blendmapScale, layerTileSize);
+                }
 
                 stateset->setAttributeAndModes(shaderManager->getProgram(vertexShader, fragmentShader));
             }

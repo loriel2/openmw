@@ -152,6 +152,7 @@ struct WeaponInfo;
 class CharacterController : public MWRender::Animation::TextKeyListener
 {
     MWWorld::Ptr mPtr;
+    MWWorld::Ptr mWeapon;
     MWRender::Animation *mAnimation;
     
     struct AnimationQueueEntry
@@ -203,6 +204,8 @@ class CharacterController : public MWRender::Animation::TextKeyListener
     std::string mAttackType; // slash, chop or thrust
 
     bool mAttackingOrSpell;
+
+    float mTimeUntilWake;
 
     void setAttackTypeBasedOnMovement();
 
@@ -290,7 +293,7 @@ public:
     float getAttackStrength() const;
 
     /// @see Animation::setActive
-    void setActive(bool active);
+    void setActive(int active);
 
     /// Make this character turn its head towards \a target. To turn off head tracking, pass an empty Ptr.
     void setHeadTrackTarget(const MWWorld::ConstPtr& target);

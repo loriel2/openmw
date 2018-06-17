@@ -36,12 +36,14 @@ namespace MWInput
             SDL_Window* window,
             osg::ref_ptr<osgViewer::Viewer> viewer,
             osg::ref_ptr<osgViewer::ScreenCaptureHandler> screenCaptureHandler,
+            osgViewer::ScreenCaptureHandler::CaptureOperation *screenCaptureOperation,
             const std::string& userFile, bool userFileExists,
             const std::string& controllerBindingsFile, bool grab)
         : mWindow(window)
         , mWindowVisible(true)
         , mViewer(viewer)
         , mScreenCaptureHandler(screenCaptureHandler)
+        , mScreenCaptureOperation(screenCaptureOperation)
         , mJoystickLastUsed(false)
         , mPlayer(NULL)
         , mInputManager(NULL)
@@ -174,8 +176,25 @@ namespace MWInput
         }
     }
 
+    bool isLeftOrRightButton(int action, ICS::InputControlSystem* ics, int deviceId, bool joystick)
+    {
+        int mouseBinding = ics->getMouseButtonBinding(ics->getControl(action), ICS::Control::INCREASE);
+        if (mouseBinding != ICS_MAX_DEVICE_BUTTONS)
+            return true;
+        int buttonBinding = ics->getJoystickButtonBinding(ics->getControl(action), deviceId, ICS::Control::INCREASE);
+        if (joystick && (buttonBinding == 0 || buttonBinding == 1))
+            return true;
+        return false;
+    }
+
     void InputManager::handleGuiArrowKey(int action)
     {
+        if (SDL_IsTextInputActive())
+            return;
+
+        if (isLeftOrRightButton(action, mInputBinder, mFakeDeviceID, mJoystickLastUsed))
+            return;
+
         MyGUI::KeyCode key;
         switch (action)
         {
@@ -230,7 +249,10 @@ namespace MWInput
         if (mControlSwitch["playercontrols"])
         {
             if (action == A_Use)
-                mPlayer->setAttackingOrSpell(currentValue != 0);
+            {
+                MWMechanics::DrawState_ state = MWBase::Environment::get().getWorld()->getPlayer().getDrawState();
+                mPlayer->setAttackingOrSpell(currentValue != 0 && state != MWMechanics::DrawState_Nothing);
+            }
             else if (action == A_Jump)
                 mAttemptJump = (currentValue == 1.0 && previousValue == 0.0);
         }
@@ -504,30 +526,29 @@ namespace MWInput
                 isRunning = xAxis > .75 || xAxis < .25 || yAxis > .75 || yAxis < .25;
                 if(triedToMove) resetIdleTime();
 
-                if (actionIsActive(A_MoveLeft))
+                if (actionIsActive(A_MoveLeft) && !actionIsActive(A_MoveRight))
                 {
                     triedToMove = true;
                     mPlayer->setLeftRight (-1);
                 }
-                else if (actionIsActive(A_MoveRight))
+                else if (actionIsActive(A_MoveRight) && !actionIsActive(A_MoveLeft))
                 {
                     triedToMove = true;
                     mPlayer->setLeftRight (1);
                 }
 
-                if (actionIsActive(A_MoveForward))
+                if (actionIsActive(A_MoveForward) && !actionIsActive(A_MoveBackward))
                 {
                     triedToMove = true;
                     mPlayer->setAutoMove (false);
                     mPlayer->setForwardBackward (1);
                 }
-                else if (actionIsActive(A_MoveBackward))
+                else if (actionIsActive(A_MoveBackward) && !actionIsActive(A_MoveForward))
                 {
                     triedToMove = true;
                     mPlayer->setAutoMove (false);
                     mPlayer->setForwardBackward (-1);
                 }
-
                 else if(mPlayer->getAutoMove())
                 {
                     triedToMove = true;
@@ -1014,10 +1035,34 @@ namespace MWInput
 
     void InputManager::screenshot()
     {
-        mScreenCaptureHandler->setFramesToCapture(1);
-        mScreenCaptureHandler->captureNextFrame(*mViewer);
+        bool regularScreenshot = true;
+        bool screenshotTaken = false;
 
-        MWBase::Environment::get().getWindowManager()->messageBox ("Screenshot saved");
+        std::string settingStr;
+
+        settingStr = Settings::Manager::getString("screenshot type","Video");
+        regularScreenshot = settingStr.size() == 0 || settingStr.compare("regular") == 0;
+
+        if (regularScreenshot)
+        {
+            mScreenCaptureHandler->setFramesToCapture(1);
+            mScreenCaptureHandler->captureNextFrame(*mViewer);
+            screenshotTaken = true;
+        }
+        else
+        {
+            osg::ref_ptr<osg::Image> screenshot (new osg::Image);
+
+            if (MWBase::Environment::get().getWorld()->screenshot360(screenshot.get(),settingStr))
+            {
+                (*mScreenCaptureOperation) (*(screenshot.get()),0);
+                // FIXME: mScreenCaptureHandler->getCaptureOperation() causes crash for some reason
+                screenshotTaken = true;
+            }
+        }
+
+        if (screenshotTaken)
+            MWBase::Environment::get().getWindowManager()->messageBox("Screenshot saved");
     }
 
     void InputManager::toggleInventory()
@@ -1111,7 +1156,10 @@ namespace MWInput
     void InputManager::activate()
     {
         if (MWBase::Environment::get().getWindowManager()->isGuiMode())
-            MWBase::Environment::get().getWindowManager()->injectKeyPress(MyGUI::KeyCode::Return, 0);
+        {
+            if (!SDL_IsTextInputActive() && !isLeftOrRightButton(A_Activate, mInputBinder, mFakeDeviceID, mJoystickLastUsed))
+                MWBase::Environment::get().getWindowManager()->injectKeyPress(MyGUI::KeyCode::Return, 0);
+        }
         else if (mControlSwitch["playercontrols"])
             mPlayer->activate();
     }
@@ -1236,13 +1284,13 @@ namespace MWInput
                 clearAllKeyBindings(control);
 
                 if (defaultKeyBindings.find(i) != defaultKeyBindings.end()
-                        && !mInputBinder->isKeyBound(defaultKeyBindings[i]))
+                        && (force || !mInputBinder->isKeyBound(defaultKeyBindings[i])))
                 {
                     control->setInitialValue(0.0f);
                     mInputBinder->addKeyBinding(control, defaultKeyBindings[i], ICS::Control::INCREASE);
                 }
                 else if (defaultMouseButtonBindings.find(i) != defaultMouseButtonBindings.end()
-                         && !mInputBinder->isMouseButtonBound(defaultMouseButtonBindings[i]))
+                         && (force || !mInputBinder->isMouseButtonBound(defaultMouseButtonBindings[i])))
                 {
                     control->setInitialValue(0.0f);
                     mInputBinder->addMouseButtonBinding (control, defaultMouseButtonBindings[i], ICS::Control::INCREASE);
@@ -1316,12 +1364,12 @@ namespace MWInput
                 clearAllControllerBindings(control);
 
                 if (defaultButtonBindings.find(i) != defaultButtonBindings.end()
-                        && !mInputBinder->isJoystickButtonBound(mFakeDeviceID, defaultButtonBindings[i]))
+                        && (force || !mInputBinder->isJoystickButtonBound(mFakeDeviceID, defaultButtonBindings[i])))
                 {
                     control->setInitialValue(0.0f);
                     mInputBinder->addJoystickButtonBinding(control, mFakeDeviceID, defaultButtonBindings[i], ICS::Control::INCREASE);
                 }
-                else if (defaultAxisBindings.find(i) != defaultAxisBindings.end() && !mInputBinder->isJoystickAxisBound(mFakeDeviceID, defaultAxisBindings[i]))
+                else if (defaultAxisBindings.find(i) != defaultAxisBindings.end() && (force || !mInputBinder->isJoystickAxisBound(mFakeDeviceID, defaultAxisBindings[i])))
                 {
                     control->setValue(0.5f);
                     control->setInitialValue(0.5f);

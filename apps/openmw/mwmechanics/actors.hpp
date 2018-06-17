@@ -4,7 +4,6 @@
 #include <set>
 #include <vector>
 #include <string>
-#include <map>
 #include <list>
 
 #include "../mwbase/world.hpp"
@@ -26,6 +25,9 @@ namespace MWMechanics
     {
             std::map<std::string, int> mDeathCount;
 
+            void addBoundItem (const std::string& itemId, const MWWorld::Ptr& actor);
+            void removeBoundItem (const std::string& itemId, const MWWorld::Ptr& actor);
+
             void updateNpc(const MWWorld::Ptr &ptr, float duration);
 
             void adjustMagicEffects (const MWWorld::Ptr& creature);
@@ -39,9 +41,9 @@ namespace MWMechanics
 
             void updateDrowning (const MWWorld::Ptr& ptr, float duration);
 
-            void updateEquippedLight (const MWWorld::Ptr& ptr, float duration);
+            void updateEquippedLight (const MWWorld::Ptr& ptr, float duration, bool mayEquip);
 
-            void updateCrimePersuit (const MWWorld::Ptr& ptr, float duration);
+            void updateCrimePursuit (const MWWorld::Ptr& ptr, float duration);
 
             void killDeadActors ();
 
@@ -81,6 +83,9 @@ namespace MWMechanics
             void dropActors (const MWWorld::CellStore *cellStore, const MWWorld::Ptr& ignore);
             ///< Deregister all actors (except for \a ignore) in the given cell.
 
+            void updateCombatMusic();
+            ///< Update combat music state
+
             void update (float duration, bool paused);
             ///< Update actor stats and store desired velocity vectors in \a movement
 
@@ -115,14 +120,16 @@ namespace MWMechanics
             bool isRunning(const MWWorld::Ptr& ptr);
             bool isSneaking(const MWWorld::Ptr& ptr);
 
-        void forceStateUpdate(const MWWorld::Ptr &ptr);
+            void forceStateUpdate(const MWWorld::Ptr &ptr);
 
-        bool playAnimationGroup(const MWWorld::Ptr& ptr, const std::string& groupName, int mode, int number, bool persist=false);
-        void skipAnimation(const MWWorld::Ptr& ptr);
-        bool checkAnimationPlaying(const MWWorld::Ptr& ptr, const std::string& groupName);
-        void persistAnimationStates();
+            bool playAnimationGroup(const MWWorld::Ptr& ptr, const std::string& groupName, int mode, int number, bool persist=false);
+            void skipAnimation(const MWWorld::Ptr& ptr);
+            bool checkAnimationPlaying(const MWWorld::Ptr& ptr, const std::string& groupName);
+            void persistAnimationStates();
 
             void getObjectsInRange(const osg::Vec3f& position, float radius, std::vector<MWWorld::Ptr>& out);
+
+            bool isAnyObjectInRange(const osg::Vec3f& position, float radius);
 
             void cleanupSummonedCreature (CreatureStats& casterStats, int creatureActorId);
 

@@ -14,6 +14,7 @@
 #include "../mwworld/cellstore.hpp"
 #include "../mwworld/inventorystore.hpp"
 
+#include "pathgrid.hpp"
 #include "creaturestats.hpp"
 #include "movement.hpp"
 #include "steering.hpp"
@@ -26,15 +27,36 @@ MWMechanics::AiPackage::~AiPackage() {}
 
 MWMechanics::AiPackage::AiPackage() : 
     mTimer(AI_REACTION_TIME + 1.0f), // to force initial pathbuild
+    mTargetActorRefId(""),
+    mTargetActorId(-1),
     mRotateOnTheRunChecks(0),
     mIsShortcutting(false),
-    mShortcutProhibited(false), mShortcutFailPos()
+    mShortcutProhibited(false),
+    mShortcutFailPos()
 {
 }
 
 MWWorld::Ptr MWMechanics::AiPackage::getTarget() const
 {
-    return MWWorld::Ptr();
+    if (mTargetActorId == -2)
+        return MWWorld::Ptr();
+
+    if (mTargetActorId == -1)
+    {
+        MWWorld::Ptr target = MWBase::Environment::get().getWorld()->searchPtr(mTargetActorRefId, false);
+        if (target.isEmpty())
+        {
+            mTargetActorId = -2;
+            return target;
+        }
+        else
+            mTargetActorId = target.getClass().getCreatureStats(target).getActorId();
+    }
+
+    if (mTargetActorId != -1)
+        return MWBase::Environment::get().getWorld()->searchPtrViaActorId(mTargetActorId);
+    else
+        return MWWorld::Ptr();
 }
 
 bool MWMechanics::AiPackage::sideWithTarget() const
@@ -98,16 +120,28 @@ bool MWMechanics::AiPackage::pathTo(const MWWorld::Ptr& actor, const ESM::Pathgr
 
     if (!isDestReached && mTimer > AI_REACTION_TIME)
     {
+        if (actor.getClass().isBipedal(actor))
+            openDoors(actor);
+
         bool wasShortcutting = mIsShortcutting;
         bool destInLOS = false;
-        if (getTypeId() != TypeIdWander) // prohibit shortcuts for AiWander
-            mIsShortcutting = shortcutPath(start, dest, actor, &destInLOS); // try to shortcut first
+
+        const MWWorld::Class& actorClass = actor.getClass();
+        MWBase::World* world = MWBase::Environment::get().getWorld();
+
+        // check if actor can move along z-axis
+        bool actorCanMoveByZ = (actorClass.canSwim(actor) && MWBase::Environment::get().getWorld()->isSwimming(actor))
+            || world->isFlying(actor);
+
+        // Prohibit shortcuts for AiWander, if the actor can not move in 3 dimensions.
+        if (actorCanMoveByZ || getTypeId() != TypeIdWander)
+            mIsShortcutting = shortcutPath(start, dest, actor, &destInLOS, actorCanMoveByZ); // try to shortcut first
 
         if (!mIsShortcutting)
         {
             if (wasShortcutting || doesPathNeedRecalc(dest, actor.getCell())) // if need to rebuild path
             {
-                mPathFinder.buildSyncedPath(start, dest, actor.getCell());
+                mPathFinder.buildSyncedPath(start, dest, actor.getCell(), getPathGridGraph(actor.getCell()));
                 mRotateOnTheRunChecks = 3;
 
                 // give priority to go directly on target if there is minimal opportunity
@@ -178,62 +212,63 @@ void MWMechanics::AiPackage::evadeObstacles(const MWWorld::Ptr& actor, float dur
     // first check if obstacle is a door
     static float distance = MWBase::Environment::get().getWorld()->getMaxActivationDistance();
 
-    MWWorld::Ptr door = getNearbyDoor(actor, distance);
-    if (door != MWWorld::Ptr())
+    const MWWorld::Ptr door = getNearbyDoor(actor, distance);
+    if (!door.isEmpty() && actor.getClass().isBipedal(actor))
     {
-        // note: AiWander currently does not open doors
-        if (getTypeId() != TypeIdWander && !door.getCellRef().getTeleport() && door.getClass().getDoorState(door) == 0)
-        {
-            if ((door.getCellRef().getTrap().empty() && door.getCellRef().getLockLevel() <= 0 ))
-            {
-                MWBase::Environment::get().getWorld()->activate(door, actor);
-                return;
-            }
-
-            std::string keyId = door.getCellRef().getKey();
-            if (keyId.empty())
-                return;
-
-            bool hasKey = false;
-            const MWWorld::ContainerStore &invStore = actor.getClass().getContainerStore(actor);
-
-            // make key id lowercase
-            Misc::StringUtils::lowerCaseInPlace(keyId);
-            for (MWWorld::ConstContainerStoreIterator it = invStore.cbegin(); it != invStore.cend(); ++it)
-            {
-                std::string refId = it->getCellRef().getRefId();
-                Misc::StringUtils::lowerCaseInPlace(refId);
-                if (refId == keyId)
-                {
-                    hasKey = true;
-                    break;
-                }
-            }
-
-            if (hasKey)
-                MWBase::Environment::get().getWorld()->activate(door, actor);
-        }
+        openDoors(actor);
     }
-    else // any other obstacle (NPC, crate, etc.)
+    else
     {
         mObstacleCheck.takeEvasiveAction(movement);
     }
 }
 
-bool MWMechanics::AiPackage::shortcutPath(const ESM::Pathgrid::Point& startPoint, const ESM::Pathgrid::Point& endPoint, const MWWorld::Ptr& actor, bool *destInLOS)
+void MWMechanics::AiPackage::openDoors(const MWWorld::Ptr& actor)
 {
-    const MWWorld::Class& actorClass = actor.getClass();
-    MWBase::World* world = MWBase::Environment::get().getWorld();
+    static float distance = MWBase::Environment::get().getWorld()->getMaxActivationDistance();
 
-    // check if actor can move along z-axis
-    bool actorCanMoveByZ = (actorClass.canSwim(actor) && MWBase::Environment::get().getWorld()->isSwimming(actor))
-        || world->isFlying(actor);
+    const MWWorld::Ptr door = getNearbyDoor(actor, distance);
+    if (door == MWWorld::Ptr())
+        return;
 
-    // don't use pathgrid when actor can move in 3 dimensions
-    bool isPathClear = actorCanMoveByZ;
+    // note: AiWander currently does not open doors
+    if (getTypeId() != TypeIdWander && !door.getCellRef().getTeleport() && door.getClass().getDoorState(door) == 0)
+    {
+        if ((door.getCellRef().getTrap().empty() && door.getCellRef().getLockLevel() <= 0 ))
+        {
+            MWBase::Environment::get().getWorld()->activate(door, actor);
+            return;
+        }
 
-    if (!isPathClear
-        && (!mShortcutProhibited || (PathFinder::MakeOsgVec3(mShortcutFailPos) - PathFinder::MakeOsgVec3(startPoint)).length() >= PATHFIND_SHORTCUT_RETRY_DIST))
+        const std::string keyId = door.getCellRef().getKey();
+        if (keyId.empty())
+            return;
+
+        MWWorld::ContainerStore &invStore = actor.getClass().getContainerStore(actor);
+        MWWorld::Ptr keyPtr = invStore.search(keyId);
+
+        if (!keyPtr.isEmpty())
+            MWBase::Environment::get().getWorld()->activate(door, actor);
+    }
+}
+
+const MWMechanics::PathgridGraph& MWMechanics::AiPackage::getPathGridGraph(const MWWorld::CellStore *cell)
+{
+    const ESM::CellId& id = cell->getCell()->getCellId();
+    // static cache is OK for now, pathgrids can never change during runtime
+    typedef std::map<ESM::CellId, std::unique_ptr<MWMechanics::PathgridGraph> > CacheMap;
+    static CacheMap cache;
+    CacheMap::iterator found = cache.find(id);
+    if (found == cache.end())
+    {
+        cache.insert(std::make_pair(id, std::unique_ptr<MWMechanics::PathgridGraph>(new MWMechanics::PathgridGraph(cell))));
+    }
+    return *cache[id].get();
+}
+
+bool MWMechanics::AiPackage::shortcutPath(const ESM::Pathgrid::Point& startPoint, const ESM::Pathgrid::Point& endPoint, const MWWorld::Ptr& actor, bool *destInLOS, bool isPathClear)
+{
+    if (!mShortcutProhibited || (PathFinder::MakeOsgVec3(mShortcutFailPos) - PathFinder::MakeOsgVec3(startPoint)).length() >= PATHFIND_SHORTCUT_RETRY_DIST)
     {
         // check if target is clearly visible
         isPathClear = !MWBase::Environment::get().getWorld()->castRay(

@@ -272,6 +272,12 @@ public:
 
     void setWaterLevel(float waterLevel)
     {
+        const float refractionScale = std::min(1.0f,std::max(0.0f,
+            Settings::Manager::getFloat("refraction scale", "Water")));
+
+        setViewMatrix(osg::Matrix::scale(1,1,refractionScale) *
+            osg::Matrix::translate(0,0,(1.0 - refractionScale) * waterLevel));
+
         mClipCullNode->setPlane(osg::Plane(osg::Vec3d(0,0,-1), osg::Vec3d(0,0, waterLevel)));
     }
 
@@ -464,6 +470,16 @@ void Water::updateWaterMaterial()
     updateVisible();
 }
 
+osg::Camera *Water::getReflectionCamera()
+{
+    return mReflection;
+}
+
+osg::Camera *Water::getRefractionCamera()
+{
+    return mRefraction;
+}
+
 void Water::createSimpleWaterStateSet(osg::Node* node, float alpha)
 {
     osg::ref_ptr<osg::StateSet> stateset = SceneUtil::createSimpleWaterStateSet(alpha, MWRender::RenderBin_Water);
@@ -497,13 +513,11 @@ void Water::createSimpleWaterStateSet(osg::Node* node, float alpha)
 
     // use a shader to render the simple water, ensuring that fog is applied per pixel as required.
     // this could be removed if a more detailed water mesh, using some sort of paging solution, is implemented.
-#if !defined(OPENGL_ES) && !defined(ANDROID)
     Resource::SceneManager* sceneManager = mResourceSystem->getSceneManager();
     bool oldValue = sceneManager->getForceShaders();
     sceneManager->setForceShaders(true);
     sceneManager->recreateShaders(node);
     sceneManager->setForceShaders(oldValue);
-#endif
 }
 
 void Water::createShaderWaterStateSet(osg::Node* node, Reflection* reflection, Refraction* refraction)

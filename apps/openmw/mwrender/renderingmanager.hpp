@@ -3,6 +3,7 @@
 
 #include <osg/ref_ptr>
 #include <osg/Light>
+#include <osg/Camera>
 
 #include <components/settings/settings.hpp>
 
@@ -106,7 +107,7 @@ namespace MWRender
 
         void configureAmbient(const ESM::Cell* cell);
         void configureFog(const ESM::Cell* cell);
-        void configureFog(float fogDepth, float underwaterFog, const osg::Vec4f& colour);
+        void configureFog(float fogDepth, float underwaterFog, float dlFactor, float dlOffset, const osg::Vec4f& colour);
 
         void addCell(const MWWorld::CellStore* store);
         void removeCell(const MWWorld::CellStore* store);
@@ -125,7 +126,8 @@ namespace MWRender
         void setWaterHeight(float level);
 
         /// Take a screenshot of w*h onto the given image, not including the GUI.
-        void screenshot(osg::Image* image, int w, int h);
+        void screenshot(osg::Image* image, int w, int h, osg::Matrixd cameraTransform=osg::Matrixd());
+        bool screenshot360(osg::Image* image, std::string settingStr);
 
         struct RayResult
         {
@@ -205,6 +207,8 @@ namespace MWRender
 
         LandManager* getLandManager() const;
 
+        bool toggleBorders();
+
     private:
         void updateProjectionMatrix();
         void updateTextureFiltering();
@@ -212,6 +216,8 @@ namespace MWRender
         void setFogColor(const osg::Vec4f& color);
 
         void reportStats() const;
+
+        void renderCameraToImage(osg::Camera *camera, osg::Image *image, int w, int h);
 
         osg::ref_ptr<osgUtil::IntersectionVisitor> getIntersectionVisitor(osgUtil::Intersector* intersector, bool ignorePlayer, bool ignoreActors);
 
@@ -241,10 +247,12 @@ namespace MWRender
 
         osg::ref_ptr<StateUpdater> mStateUpdater;
 
-        float mFogDepth;
+        float mLandFogStart;
+        float mLandFogEnd;
+        float mUnderwaterFogStart;
+        float mUnderwaterFogEnd;
         osg::Vec4f mUnderwaterColor;
         float mUnderwaterWeight;
-        float mUnderwaterFog;
         float mUnderwaterIndoorFog;
         osg::Vec4f mFogColor;
 
@@ -253,10 +261,13 @@ namespace MWRender
 
         float mNearClip;
         float mViewDistance;
+        bool mDistantFog : 1;
+        bool mDistantTerrain : 1;
+        bool mFieldOfViewOverridden : 1;
         float mFieldOfViewOverride;
-        bool mFieldOfViewOverridden;
         float mFieldOfView;
         float mFirstPersonFieldOfView;
+        bool mBorders;
 
         void operator = (const RenderingManager&);
         RenderingManager(const RenderingManager&);

@@ -6,6 +6,8 @@
 
 #include "../mwworld/ptr.hpp"
 
+#include "magiceffects.hpp"
+
 namespace ESM
 {
     struct Spell;
@@ -31,11 +33,12 @@ namespace MWMechanics
      * @param actor calculate spell success chance for this actor (depends on actor's skills)
      * @param effectiveSchool the spell's effective school (relevant for skill progress) will be written here
      * @param cap cap the result to 100%?
+     * @param checkMagicka check magicka?
      * @note actor can be an NPC or a creature
      * @return success chance from 0 to 100 (in percent), if cap=false then chance above 100 may be returned.
      */
-    float getSpellSuccessChance (const ESM::Spell* spell, const MWWorld::Ptr& actor, int* effectiveSchool = NULL, bool cap=true);
-    float getSpellSuccessChance (const std::string& spellId, const MWWorld::Ptr& actor, int* effectiveSchool = NULL, bool cap=true);
+    float getSpellSuccessChance (const ESM::Spell* spell, const MWWorld::Ptr& actor, int* effectiveSchool = NULL, bool cap=true, bool checkMagicka=false);
+    float getSpellSuccessChance (const std::string& spellId, const MWWorld::Ptr& actor, int* effectiveSchool = NULL, bool cap=true, bool checkMagicka=false);
 
     int getSpellSchool(const std::string& spellId, const MWWorld::Ptr& actor);
     int getSpellSchool(const ESM::Spell* spell, const MWWorld::Ptr& actor);
@@ -118,6 +121,21 @@ namespace MWMechanics
         bool applyInstantEffect (const MWWorld::Ptr& target, const MWWorld::Ptr& caster, const MWMechanics::EffectKey& effect, float magnitude);
     };
 
+    class ApplyLoopingParticlesVisitor : public EffectSourceVisitor
+    {
+    private:
+        MWWorld::Ptr mActor;
+
+    public:
+        ApplyLoopingParticlesVisitor(const MWWorld::Ptr& actor)
+            : mActor(actor)
+        {
+        }
+
+        virtual void visit (MWMechanics::EffectKey key,
+                            const std::string& /*sourceName*/, const std::string& /*sourceId*/, int /*casterActorId*/,
+                            float /*magnitude*/, float /*remainingTime*/ = -1, float /*totalTime*/ = -1);
+    };
 }
 
 #endif

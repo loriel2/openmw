@@ -15,6 +15,7 @@ Programmers
     Adam Hogan (aurix)
     Aesylwinn
     aegis
+    AHSauge
     Aleksandar Jovanov
     Alex Haddad (rainChu)
     Alex McKibben
@@ -36,12 +37,15 @@ Programmers
     Britt Mathis (galdor557)
     Capostrophic
     cc9cii
+    Cédric Mocquillon
     Chris Boyce (slothlife)
     Chris Robinson (KittyCat)
     Cory F. Cohen (cfcohen)
     Cris Mihalache (Mirceam)
     crussell187
+    DanielVukelich
     darkf
+    David Cernat (davidcernat)
     devnexen
     Dieho
     Dmitry Shkurskiy (endorph)
@@ -59,6 +63,7 @@ Programmers
     Evgeniy Mineev (sandstranger)
     Federico Guerra (FedeWar)
     Fil Krynicki (filkry)
+    Florian Weber (Florianjw)
     Gašper Sedej
     gugus/gus
     Hallfaer Tuilinn
@@ -129,6 +134,7 @@ Programmers
     Radu-Marius Popovici (rpopovici)
     Rafael Moura (dhustkoder)
     rdimesio
+    rexelion
     riothamus
     Rob Cutmore (rcutmore)
     Robert MacGregor (Ragora)
@@ -152,7 +158,10 @@ Programmers
     Sylvain Thesnieres (Garvek)
     t6
     terrorfisch
+    thegriglat
     Thomas Luppi (Digmaster)
+    tri4ng1e
+    unelsson
     Will Herrmann (Thunderforge)
     Tom Mason (wheybags)
     Torben Leif Carrington (TorbenC)
@@ -222,7 +231,7 @@ Artwork
 
     Necrod - OpenMW Logo
     Mickey Lyle (raevol) - Wordpress Theme
-    Tom Koenderink (Okulo), SirHerrbatka, crysthala, Shnatsel - OpenMW Editor Icons
+    Tom Koenderink (Okulo), SirHerrbatka, crysthala, Shnatsel, Lamoot - OpenMW Editor Icons
 
 Inactive Contributors
 ---------------------
